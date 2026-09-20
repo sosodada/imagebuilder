@@ -169,7 +169,7 @@ sed -i \
   -e 's/^CONFIG_VDI_IMAGES=y/# CONFIG_VDI_IMAGES is not set/' \
   -e 's/^CONFIG_VHDX_IMAGES=y/# CONFIG_VHDX_IMAGES is not set/' \
   -e 's/^CONFIG_ISO_IMAGES=y/# CONFIG_ISO_IMAGES is not set/' \
-  -e 's/^CONFIG_GRUB_IMAGES=y/# CONFIG_GRUB_IMAGES is not set/' \
+   \
   .config
 
 if ! make image \
@@ -192,6 +192,7 @@ fi
 	for f in *-rootfs.tar.gz;             do [ -f "$f" ] && mv "$f" daede-rootfs.tar.gz;         done
 	for f in *.manifest;                  do [ -f "$f" ] && mv "$f" daede.manifest;              done
 	for f in *.bom.cdx.json;              do [ -f "$f" ] && mv "$f" daede.bom.cdx.json;          done
+	for f in *-squashfs-combined.img.gz; do [ -f "$f" ] && mv "$f" daede-squashfs-bios.img.gz; done
 	for f in *.img.gz *.qcow2 *.vmdk *.bin *.tar.gz *.manifest *.bom.cdx.json; do
 	  [ -f "$f" ] || continue
 	  sha256sum "$f"
