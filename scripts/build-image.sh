@@ -145,8 +145,9 @@ install_extra_apks() {
   fetch_release_assets vernesong/OpenClash '\.apk$' "$stage"
   fetch_release_assets Openwrt-Passwall/openwrt-passwall2 \
     '^(luci-app-passwall2|luci-i18n-passwall2-zh-cn).*\.apk$' "$stage"
-  fetch_release_assets Openwrt-Passwall/openwrt-passwall2 \
-    '^passwall_packages_apk_x86_64\.zip$' "$stage"
+  curl -fL --retry 5 --retry-delay 5 --connect-timeout 30 \
+    -o "$stage/passwall_packages_apk_x86_64.zip" \
+    https://dl.passwall2.org/releases/latest/passwall_packages_apk_x86_64.zip
 
   unzip -o -j "$stage"/passwall_packages_apk_x86_64.zip '*.apk' -d "$stage"
   rm -f "$stage"/*.zip
