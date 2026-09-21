@@ -97,7 +97,62 @@ install_daede_apk() {
   curl -L --retry 8 --retry-delay 5 --connect-timeout 30 \
     -o "$packages_dir/$fname" "$daede_url"
 }
+fetch_release_assets() {
+  # 用法: fetch_release_assets <owner/repo> <文件名正则> <保存目录>
+  python3 - "$1" "$2" "$3" <<'PY'
+import json, os, re, sys, urllib.request
 
+repo, pattern, dest = sys.argv[1:4]
+req = urllib.request.Request(
+    f"https://api.github.com/repos/{repo}/releases/latest",
+    headers={"Accept": "application/vnd.github+json", "User-Agent": "imagebuilder"},
+)
+token = os.environ.get("GITHUB_TOKEN")
+if token:
+    req.add_header("Authorization", f"Bearer {token}")
+with urllib.request.urlopen(req, timeout=30) as r:
+    release = json.load(r)
+
+hits = [a for a in release.get("assets", []) if re.search(pattern, a["name"])]
+if not hits:
+    raise SystemExit(f"{repo}: no asset matches {pattern}")
+for a in hits:
+    print("Downloading", a["name"])
+    urllib.request.urlretrieve(a["browser_download_url"], os.path.join(dest, a["name"]))
+PY
+}
+
+# apk 索引要求文件名是 “包名-版本.apk”，不一致会报 package mentioned in index not found
+normalize_apk_names() {
+  local dir="$1" f name ver
+  local apk_bin="$WORK_DIR/imagebuilder/staging_dir/host/bin/apk"
+  [ -x "$apk_bin" ] || { echo "warn: host apk not found, skip renaming"; return; }
+  for f in "$dir"/*.apk; do
+    [ -f "$f" ] || continue
+    name="$("$apk_bin" adbdump "$f" 2>/dev/null | awk '/^  name:/ {print $2; exit}')"
+    ver="$("$apk_bin" adbdump "$f" 2>/dev/null | awk '/^  version:/ {print $2; exit}')"
+    if [ -n "$name" ] && [ -n "$ver" ] && [ "$(basename "$f")" != "$name-$ver.apk" ]; then
+      echo "Renaming $(basename "$f") -> $name-$ver.apk"
+      mv "$f" "$dir/$name-$ver.apk"
+    fi
+  done
+}
+
+install_extra_apks() {
+  local stage="$WORK_DIR/extra-apks" packages_dir="$WORK_DIR/imagebuilder/packages"
+  rm -rf "$stage"; mkdir -p "$stage" "$packages_dir"
+
+  fetch_release_assets vernesong/OpenClash '\.apk$' "$stage"
+  fetch_release_assets Openwrt-Passwall/openwrt-passwall2 \
+    '^(luci-app-passwall2|luci-i18n-passwall2-zh-cn).*\.apk$' "$stage"
+  fetch_release_assets Openwrt-Passwall/openwrt-passwall2 \
+    '^passwall_packages_apk_x86_64\.zip$' "$stage"
+
+  unzip -o -j "$stage"/passwall_packages_apk_x86_64.zip '*.apk' -d "$stage"
+  rm -f "$stage"/*.zip
+  normalize_apk_names "$stage"
+  cp -f "$stage"/*.apk "$packages_dir"/
+}
 if [ ! -s "$IB_ARCHIVE" ]; then
   curl -L --retry 8 --retry-delay 5 --connect-timeout 30 \
     -o "$IB_ARCHIVE" "$IMAGEBUILDER_URL"
@@ -109,7 +164,7 @@ tar --use-compress-program=unzstd -xf "$IB_ARCHIVE" -C "$WORK_DIR/imagebuilder" 
 
 cp -a files "$WORK_DIR/imagebuilder/files"
 install_daede_apk
-
+install_extra_apks
 cd "$WORK_DIR/imagebuilder"
 
 echo "Version: $VERSION"
