@@ -90,7 +90,7 @@ jobs:
           DAEDE_APK_URL: ${{ inputs.daede_apk_url }}
           GITHUB_TOKEN: ${{ github.token }}
           OUT_DIR: ${{ github.workspace }}/out
-          EXTRA_PACKAGES: "luci luci-i18n-base-zh-cn luci-i18n-package-manager-zh-cn luci-app-daede kmod-sched-core kmod-sched-bpf kmod-veth kmod-xdp-sockets-diag curl nano kmod-usb-core kmod-usb2 kmod-usb3 kmod-usb-net-asix-ax88179 kmod-usb-storage kmod-usb-storage-uas block-mount blkid kmod-fs-ntfs3 ntfs-3g kmod-nls-utf8"
+                    EXTRA_PACKAGES: "luci luci-i18n-base-zh-cn luci-i18n-package-manager-zh-cn luci-app-daede kmod-sched-core kmod-sched-bpf kmod-veth kmod-xdp-sockets-diag curl nano kmod-usb-core kmod-usb2 kmod-usb3 kmod-usb-net-asix-ax88179 kmod-usb-storage kmod-usb-storage-uas block-mount blkid kmod-fs-ntfs3 ntfs-3g kmod-nls-utf8 luci-app-samba4 luci-i18n-samba4-zh-cn wsdd2 -dnsmasq dnsmasq-full ip-full bash ca-bundle unzip ruby ruby-yaml luci-compat kmod-tun kmod-inet-diag kmod-nft-tproxy luci-app-openclash luci-app-passwall2 luci-i18n-passwall2-zh-cn geoview tcping chinadns-ng xray-core v2ray-geoip v2ray-geosite"
         run: |
           chmod +x scripts/build-image.sh
           scripts/build-image.sh
