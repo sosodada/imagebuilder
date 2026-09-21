@@ -1,0 +1,19 @@
+cat > /etc/rc.local <<'EOF'
+# 开机自动挂载 NTFS 移动硬盘（按 UUID 查找设备）
+(
+  UUID="2292DF7B92DF51C1"
+  MNT="/mnt/sdc1"
+  mkdir -p "$MNT"
+  DEV=""
+  i=0
+  while [ $i -lt 30 ]; do
+    DEV="$(blkid -U "$UUID" 2>/dev/null || block info | grep "$UUID" | cut -d: -f1)"
+    [ -n "$DEV" ] && break
+    i=$((i+1)); sleep 2
+  done
+  [ -n "$DEV" ] || exit 0
+  grep -q " $MNT " /proc/mounts || ntfs-3g "$DEV" "$MNT"
+  /etc/init.d/samba4 restart 2>/dev/null
+) &
+exit 0
+EOF
