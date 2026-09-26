@@ -1,0 +1,28 @@
+#!/bin/sh
+
+# 外接 NTFS 移动硬盘,按 UUID 识别,不受盘符变化影响
+uci -q batch <<-EOF
+	add fstab mount
+	set fstab.@mount[-1].target='/mnt/exthdd'
+	set fstab.@mount[-1].uuid='2292DF7B92DF51C1'
+	set fstab.@mount[-1].fstype='ntfs3'
+	set fstab.@mount[-1].options='rw,force'
+	set fstab.@mount[-1].enabled='1'
+	set fstab.@mount[-1].enabled_fsck='0'
+EOF
+
+# Samba 共享指向这个挂载点
+uci -q batch <<-EOF
+	set samba4.@sambashare[0].name='sdb1'
+	set samba4.@sambashare[0].path='/mnt/exthdd'
+	set samba4.@sambashare[0].read_only='no'
+	set samba4.@sambashare[0].force_root='1'
+	set samba4.@sambashare[0].guest_ok='yes'
+	set samba4.@sambashare[0].create_mask='0666'
+	set samba4.@sambashare[0].dir_mask='0777'
+EOF
+
+uci commit fstab
+uci commit samba4
+
+exit 0
