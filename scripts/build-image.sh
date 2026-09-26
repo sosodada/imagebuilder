@@ -164,6 +164,7 @@ mkdir -p "$WORK_DIR/imagebuilder"
 tar --use-compress-program=unzstd -xf "$IB_ARCHIVE" -C "$WORK_DIR/imagebuilder" --strip-components=1
 
 cp -a files "$WORK_DIR/imagebuilder/files"
+chmod +x "$WORK_DIR/imagebuilder/files/etc/uci-defaults/"* 2>/dev/null || true
 install_daede_apk
 install_extra_apks
 cd "$WORK_DIR/imagebuilder"
