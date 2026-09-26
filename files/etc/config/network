@@ -1,1 +1,37 @@
+config interface 'loopback'
+        option device 'lo'
+        option proto 'static'
+        list ipaddr '127.0.0.1/8'
+
+config globals 'globals'
+        option dhcp_default_duid '00049f249c724f044c798fe7d932fb247aaa'
+        option ula_prefix 'fd97:da92:176::/48'
+        option packet_steering '1'
+
+config device
+        option name 'br-lan'
+        option type 'bridge'
+        list ports 'eth0'
+
+config interface 'lan'
+        option device 'br-lan'
+        option proto 'static'
+        option ipaddr '192.168.50.10'
+        option netmask '255.255.255.0'
+        option gateway '192.168.50.100'
+        option delegate '0'
+        option multipath 'off'
+        option broadcast '192.168.50.0'
+        list dns '223.5.5.5'
+        list dns '192.168.50.100'
+
+config interface 'wan'
+        option proto 'pppoe'
+        option device 'eth1'
+        option username 'B23814150'
+        option password '756306'
+        option ipv6 '0'
+        option multipath 'off'
+        option sourcefilter '0'
+        option delegate '0'
 
